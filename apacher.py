@@ -84,10 +84,16 @@ def process_log_file(args):
             'httpcode': 'Top HTTP codes',
             'agent': 'Top HTTP agents'}
 
+    # Skip ::1 loopback which Apache uses to check on it's children
+    #::1 - - [22/Dec/2013:04:02:03 +0000] "OPTIONS * HTTP/1.0" 502 484 "-" "Apache/2.2.3 (CentOS) (internal dummy connection)"
+    loopback = re.compile('^::1\s+.*',re.VERBOSE)
+    
     # Create dictionary for each of the values, and only print the ones being asked to
     with open(args.l, "r") as file:
         for line in file:
             line.strip("\n")
+            if re.match(loopback,line):
+                continue
             match = re.search(pattern,line)
             dict_ip[match.group('ip')] += 1
             dict_url[match.group('url')] += 1
